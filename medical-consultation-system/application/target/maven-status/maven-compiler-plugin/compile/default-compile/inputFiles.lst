@@ -1,0 +1,10 @@
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\ExamRepository.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\PatientRepository.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\usecase\RegisterMedicalRecordUseCaseImpl.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\dto\PatientHistoryDTO.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\input\RegisterMedicalRecordUseCase.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\MedicationRepository.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\MedicalRecordRepository.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\dto\RegisterMedicalRecordCommand.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\ConsultationRepository.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\application\src\main\java\com\pediatric\application\port\output\DoctorRepository.java

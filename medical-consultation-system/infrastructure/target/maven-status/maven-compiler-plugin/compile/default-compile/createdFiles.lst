@@ -1,0 +1,7 @@
+com\pediatric\infrastructure\adapter\persistence\InMemoryConsultationRepository.class
+com\pediatric\infrastructure\Main.class
+com\pediatric\infrastructure\adapter\persistence\InMemoryExamRepository.class
+com\pediatric\infrastructure\adapter\persistence\InMemoryMedicationRepository.class
+com\pediatric\infrastructure\adapter\persistence\InMemoryPatientRepository.class
+com\pediatric\infrastructure\adapter\persistence\InMemoryDoctorRepository.class
+com\pediatric\infrastructure\adapter\persistence\InMemoryMedicalRecordRepository.class

@@ -1,0 +1,14 @@
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\valueobject\Address.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\MedicalRecord.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Prescription.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Doctor.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Medication.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\valueobject\Gender.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\valueobject\Phone.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Patient.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\exception\EntityNotFoundException.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\valueobject\HealthPlan.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Exam.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\entity\Consultation.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\exception\BusinessRuleException.java
+C:\Users\kaua nogueira\Desktop\projetos\padroes_final\medical-consultation-system\domain\src\main\java\com\pediatric\domain\exception\DomainException.java

@@ -1,0 +1,13 @@
+com\pediatric\application\dto\RegisterMedicalRecordCommand$PrescriptionData.class
+com\pediatric\application\port\output\ExamRepository.class
+com\pediatric\application\port\output\MedicalRecordRepository.class
+com\pediatric\application\usecase\RegisterMedicalRecordUseCaseImpl.class
+com\pediatric\application\port\output\PatientRepository.class
+com\pediatric\application\dto\RegisterMedicalRecordCommand$Builder.class
+com\pediatric\application\port\output\DoctorRepository.class
+com\pediatric\application\port\input\RegisterMedicalRecordUseCase.class
+com\pediatric\application\port\output\MedicationRepository.class
+com\pediatric\application\dto\RegisterMedicalRecordCommand.class
+com\pediatric\application\port\output\ConsultationRepository.class
+com\pediatric\application\dto\PatientHistoryDTO$RecordSummary.class
+com\pediatric\application\dto\PatientHistoryDTO.class
