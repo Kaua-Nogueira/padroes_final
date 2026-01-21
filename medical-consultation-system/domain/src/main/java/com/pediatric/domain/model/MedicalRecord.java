@@ -1,5 +1,11 @@
 package com.pediatric.domain.entity;
 
+import com.pediatric.domain.service.BMICalculator;
+import com.pediatric.domain.valueobject.CarePlan;
+import com.pediatric.domain.valueobject.ClinicalNotes;
+import com.pediatric.domain.valueobject.ExamRequest;
+import com.pediatric.domain.valueobject.VitalSigns;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -16,22 +22,14 @@ public class MedicalRecord {
     private final UUID doctorId;
     private final LocalDateTime createdAt;
 
-    // Vital signs and measurements
-    private double weight; // in kg
-    private double height; // in cm
-    private Double temperature; // in Celsius - optional
-    private String bloodPressure; // optional for pediatric
-    private Integer heartRate; // bpm - optional
-
-    // Clinical observations
-    private String symptomDescription;
-    private String clinicalObservation;
-    private String diagnosis;
-    private String treatmentPlan;
+    // Grouped value objects
+    private VitalSigns vitalSigns;
+    private ClinicalNotes clinicalNotes;
+    private CarePlan carePlan;
 
     // Related items
     private final List<Prescription> prescriptions;
-    private final List<UUID> requestedExamIds;
+    private final List<ExamRequest> examRequests;
 
     private MedicalRecord(Builder builder) {
         this.id = builder.id != null ? builder.id : UUID.randomUUID();
@@ -40,33 +38,42 @@ public class MedicalRecord {
         this.doctorId = Objects.requireNonNull(builder.doctorId, "Doctor ID cannot be null");
         this.createdAt = builder.createdAt != null ? builder.createdAt : LocalDateTime.now();
 
-        this.weight = builder.weight;
-        this.height = builder.height;
-        this.temperature = builder.temperature;
-        this.bloodPressure = builder.bloodPressure;
-        this.heartRate = builder.heartRate;
+        // Compose VOs (allow direct VO or legacy builder fields)
+        if (builder.vitalSigns != null) {
+            this.vitalSigns = builder.vitalSigns;
+        } else {
+            this.vitalSigns = VitalSigns.builder()
+                    .weightKg(builder.weight)
+                    .heightCm(builder.height)
+                    .temperatureC(builder.temperature)
+                    .bloodPressure(builder.bloodPressure)
+                    .heartRateBpm(builder.heartRate)
+                    .build();
+        }
 
-        this.symptomDescription = builder.symptomDescription;
-        this.clinicalObservation = builder.clinicalObservation;
-        this.diagnosis = builder.diagnosis;
-        this.treatmentPlan = builder.treatmentPlan;
+        if (builder.clinicalNotes != null) {
+            this.clinicalNotes = builder.clinicalNotes;
+        } else {
+            this.clinicalNotes = ClinicalNotes.builder()
+                    .symptomDescription(Objects.requireNonNull(builder.symptomDescription, "Symptom description cannot be null"))
+                    .clinicalObservation(builder.clinicalObservation)
+                    .build();
+        }
+
+        this.carePlan = builder.carePlan != null
+                ? builder.carePlan
+                : CarePlan.builder().diagnosis(builder.diagnosis).treatmentPlan(builder.treatmentPlan).build();
 
         this.prescriptions = new ArrayList<>(builder.prescriptions);
-        this.requestedExamIds = new ArrayList<>(builder.requestedExamIds);
+        this.examRequests = new ArrayList<>(builder.examRequests);
 
         validate();
     }
 
     private void validate() {
-        if (weight <= 0) {
-            throw new IllegalArgumentException("Weight must be greater than 0");
-        }
-        if (height <= 0) {
-            throw new IllegalArgumentException("Height must be greater than 0");
-        }
-        if (symptomDescription == null || symptomDescription.isBlank()) {
-            throw new IllegalArgumentException("Symptom description cannot be empty");
-        }
+        // VitalSigns and ClinicalNotes already validate required invariants
+        Objects.requireNonNull(vitalSigns, "VitalSigns cannot be null");
+        Objects.requireNonNull(clinicalNotes, "ClinicalNotes cannot be null");
     }
 
     public static Builder builder() {
@@ -94,55 +101,26 @@ public class MedicalRecord {
         return createdAt;
     }
 
-    public double getWeight() {
-        return weight;
-    }
-
-    public double getHeight() {
-        return height;
-    }
-
-    public Optional<Double> getTemperature() {
-        return Optional.ofNullable(temperature);
-    }
-
-    public Optional<String> getBloodPressure() {
-        return Optional.ofNullable(bloodPressure);
-    }
-
-    public Optional<Integer> getHeartRate() {
-        return Optional.ofNullable(heartRate);
-    }
-
-    public String getSymptomDescription() {
-        return symptomDescription;
-    }
-
-    public String getClinicalObservation() {
-        return clinicalObservation;
-    }
-
-    public Optional<String> getDiagnosis() {
-        return Optional.ofNullable(diagnosis);
-    }
-
-    public Optional<String> getTreatmentPlan() {
-        return Optional.ofNullable(treatmentPlan);
-    }
+    public double getWeight() { return vitalSigns.getWeightKg(); }
+    public double getHeight() { return vitalSigns.getHeightCm(); }
+    public Optional<Double> getTemperature() { return vitalSigns.getTemperatureC(); }
+    public Optional<String> getBloodPressure() { return vitalSigns.getBloodPressure(); }
+    public Optional<Integer> getHeartRate() { return vitalSigns.getHeartRateBpm(); }
+    public String getSymptomDescription() { return clinicalNotes.getSymptomDescription(); }
+    public String getClinicalObservation() { return clinicalNotes.getClinicalObservation(); }
+    public Optional<String> getDiagnosis() { return Optional.ofNullable(carePlan.getDiagnosis()); }
+    public Optional<String> getTreatmentPlan() { return Optional.ofNullable(carePlan.getTreatmentPlan()); }
 
     public List<Prescription> getPrescriptions() {
         return Collections.unmodifiableList(prescriptions);
     }
 
     public List<UUID> getRequestedExamIds() {
-        return Collections.unmodifiableList(requestedExamIds);
+        return Collections.unmodifiableList(examRequests.stream().map(ExamRequest::getExamId).toList());
     }
 
     // Calculated values
-    public double calculateBMI() {
-        double heightInMeters = height / 100.0;
-        return weight / (heightInMeters * heightInMeters);
-    }
+    public double calculateBMI() { return BMICalculator.calculate(getWeight(), getHeight()); }
 
     public String getBMIClassification() {
         double bmi = calculateBMI();
@@ -157,57 +135,41 @@ public class MedicalRecord {
         return !prescriptions.isEmpty();
     }
 
-    public boolean hasRequestedExams() {
-        return !requestedExamIds.isEmpty();
-    }
+    public boolean hasRequestedExams() { return !examRequests.isEmpty(); }
 
     public int getPrescriptionCount() {
         return prescriptions.size();
     }
 
-    public int getRequestedExamCount() {
-        return requestedExamIds.size();
-    }
+    public int getRequestedExamCount() { return examRequests.size(); }
 
     // Mutation methods
+    public void updateVitalSigns(VitalSigns vitalSigns) {
+        this.vitalSigns = Objects.requireNonNull(vitalSigns, "VitalSigns cannot be null");
+    }
+
+    public void updateClinicalNotes(ClinicalNotes clinicalNotes) {
+        this.clinicalNotes = Objects.requireNonNull(clinicalNotes, "ClinicalNotes cannot be null");
+    }
     public void updateVitalSigns(double weight, double height) {
-        if (weight <= 0 || height <= 0) {
-            throw new IllegalArgumentException("Weight and height must be greater than 0");
-        }
-        this.weight = weight;
-        this.height = height;
+        this.vitalSigns = this.vitalSigns.toBuilder().weightKg(weight).heightCm(height).build();
     }
 
-    public void setTemperature(Double temperature) {
-        this.temperature = temperature;
-    }
+    public void setTemperature(Double temperature) { this.vitalSigns = this.vitalSigns.toBuilder().temperatureC(temperature).build(); }
 
-    public void setBloodPressure(String bloodPressure) {
-        this.bloodPressure = bloodPressure;
-    }
+    public void setBloodPressure(String bloodPressure) { this.vitalSigns = this.vitalSigns.toBuilder().bloodPressure(bloodPressure).build(); }
 
-    public void setHeartRate(Integer heartRate) {
-        this.heartRate = heartRate;
-    }
+    public void setHeartRate(Integer heartRate) { this.vitalSigns = this.vitalSigns.toBuilder().heartRateBpm(heartRate).build(); }
 
     public void updateSymptomDescription(String symptomDescription) {
-        if (symptomDescription == null || symptomDescription.isBlank()) {
-            throw new IllegalArgumentException("Symptom description cannot be empty");
-        }
-        this.symptomDescription = symptomDescription;
+        this.clinicalNotes = this.clinicalNotes.toBuilder().symptomDescription(symptomDescription).build();
     }
 
-    public void updateClinicalObservation(String clinicalObservation) {
-        this.clinicalObservation = clinicalObservation;
-    }
+    public void updateClinicalObservation(String clinicalObservation) { this.clinicalNotes = this.clinicalNotes.toBuilder().clinicalObservation(clinicalObservation).build(); }
 
-    public void setDiagnosis(String diagnosis) {
-        this.diagnosis = diagnosis;
-    }
+    public void setDiagnosis(String diagnosis) { this.carePlan = this.carePlan.toBuilder().diagnosis(diagnosis).build(); }
 
-    public void setTreatmentPlan(String treatmentPlan) {
-        this.treatmentPlan = treatmentPlan;
-    }
+    public void setTreatmentPlan(String treatmentPlan) { this.carePlan = this.carePlan.toBuilder().treatmentPlan(treatmentPlan).build(); }
 
     public void addPrescription(Prescription prescription) {
         Objects.requireNonNull(prescription, "Prescription cannot be null");
@@ -220,14 +182,11 @@ public class MedicalRecord {
 
     public void requestExam(UUID examId) {
         Objects.requireNonNull(examId, "Exam ID cannot be null");
-        if (!requestedExamIds.contains(examId)) {
-            requestedExamIds.add(examId);
-        }
+        boolean exists = examRequests.stream().anyMatch(r -> r.getExamId().equals(examId));
+        if (!exists) examRequests.add(new ExamRequest(examId, LocalDateTime.now()));
     }
 
-    public void cancelExamRequest(UUID examId) {
-        requestedExamIds.remove(examId);
-    }
+    public void cancelExamRequest(UUID examId) { examRequests.removeIf(r -> r.getExamId().equals(examId)); }
 
     @Override
     public boolean equals(Object o) {
@@ -245,7 +204,7 @@ public class MedicalRecord {
     @Override
     public String toString() {
         return String.format("MedicalRecord{id=%s, consultationId=%s, weight=%.1fkg, height=%.1fcm, prescriptions=%d, exams=%d}",
-                id, consultationId, weight, height, prescriptions.size(), requestedExamIds.size());
+            id, consultationId, getWeight(), getHeight(), prescriptions.size(), examRequests.size());
     }
 
     public static final class Builder {
@@ -255,19 +214,23 @@ public class MedicalRecord {
         private UUID doctorId;
         private LocalDateTime createdAt;
 
+        private VitalSigns vitalSigns;
+        private ClinicalNotes clinicalNotes;
+        private CarePlan carePlan;
+
+        // legacy fields to ease building
         private double weight;
         private double height;
         private Double temperature;
         private String bloodPressure;
         private Integer heartRate;
-
         private String symptomDescription;
         private String clinicalObservation;
         private String diagnosis;
         private String treatmentPlan;
 
         private List<Prescription> prescriptions = new ArrayList<>();
-        private List<UUID> requestedExamIds = new ArrayList<>();
+        private List<ExamRequest> examRequests = new ArrayList<>();
 
         private Builder() {}
 
@@ -295,6 +258,10 @@ public class MedicalRecord {
             this.createdAt = createdAt;
             return this;
         }
+
+        public Builder vitalSigns(VitalSigns vitalSigns) { this.vitalSigns = vitalSigns; return this; }
+        public Builder clinicalNotes(ClinicalNotes clinicalNotes) { this.clinicalNotes = clinicalNotes; return this; }
+        public Builder carePlan(CarePlan carePlan) { this.carePlan = carePlan; return this; }
 
         public Builder weight(double weight) {
             this.weight = weight;
@@ -352,12 +319,14 @@ public class MedicalRecord {
         }
 
         public Builder requestedExamIds(List<UUID> requestedExamIds) {
-            this.requestedExamIds = requestedExamIds != null ? new ArrayList<>(requestedExamIds) : new ArrayList<>();
+            this.examRequests = requestedExamIds != null
+                    ? requestedExamIds.stream().map(id -> new ExamRequest(id, null)).collect(java.util.stream.Collectors.toList())
+                    : new ArrayList<>();
             return this;
         }
 
         public Builder addRequestedExamId(UUID examId) {
-            this.requestedExamIds.add(examId);
+            this.examRequests.add(new ExamRequest(examId, null));
             return this;
         }
 

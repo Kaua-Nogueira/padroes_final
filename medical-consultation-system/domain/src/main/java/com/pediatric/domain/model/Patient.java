@@ -23,7 +23,7 @@ public class Patient {
     private LocalDate birthDate;
     private Gender gender;
     private Address address;
-    private Phone phone;
+    private java.util.List<Phone> phones;
     private HealthPlan healthPlan; // Optional - may be null for private patients
 
     private Patient(Builder builder) {
@@ -33,7 +33,10 @@ public class Patient {
         this.birthDate = Objects.requireNonNull(builder.birthDate, "Birth date cannot be null");
         this.gender = Objects.requireNonNull(builder.gender, "Gender cannot be null");
         this.address = Objects.requireNonNull(builder.address, "Address cannot be null");
-        this.phone = Objects.requireNonNull(builder.phone, "Phone cannot be null");
+        this.phones = builder.phones != null ? new java.util.ArrayList<>(builder.phones) : new java.util.ArrayList<>();
+        if (this.phones.isEmpty()) {
+            throw new IllegalArgumentException("At least one phone must be provided");
+        }
         this.healthPlan = builder.healthPlan; // Can be null
         validateAge();
     }
@@ -76,8 +79,12 @@ public class Patient {
         return address;
     }
 
-    public Phone getPhone() {
-        return phone;
+    public java.util.List<Phone> getPhones() {
+        return java.util.Collections.unmodifiableList(phones);
+    }
+
+    public Optional<Phone> getPrimaryPhone() {
+        return phones.isEmpty() ? Optional.empty() : Optional.of(phones.get(0));
     }
 
     public Optional<HealthPlan> getHealthPlan() {
@@ -115,8 +122,18 @@ public class Patient {
         this.address = Objects.requireNonNull(newAddress, "Address cannot be null");
     }
 
-    public void updatePhone(Phone newPhone) {
-        this.phone = Objects.requireNonNull(newPhone, "Phone cannot be null");
+    public void addPhone(Phone phone) {
+        phones.add(Objects.requireNonNull(phone, "Phone cannot be null"));
+    }
+
+    public void removePhone(Phone phone) {
+        phones.remove(Objects.requireNonNull(phone, "Phone cannot be null"));
+    }
+
+    public void updatePhones(java.util.List<Phone> newPhones) {
+        Objects.requireNonNull(newPhones, "Phones cannot be null");
+        if (newPhones.isEmpty()) throw new IllegalArgumentException("At least one phone must be provided");
+        this.phones = new java.util.ArrayList<>(newPhones);
     }
 
     public void updateHealthPlan(HealthPlan newHealthPlan) {
@@ -153,7 +170,7 @@ public class Patient {
         private LocalDate birthDate;
         private Gender gender;
         private Address address;
-        private Phone phone;
+        private java.util.List<Phone> phones;
         private HealthPlan healthPlan;
 
         private Builder() {}
@@ -188,8 +205,14 @@ public class Patient {
             return this;
         }
 
-        public Builder phone(Phone phone) {
-            this.phone = phone;
+        public Builder phones(java.util.List<Phone> phones) {
+            this.phones = phones;
+            return this;
+        }
+
+        public Builder addPhone(Phone phone) {
+            if (this.phones == null) this.phones = new java.util.ArrayList<>();
+            this.phones.add(phone);
             return this;
         }
 

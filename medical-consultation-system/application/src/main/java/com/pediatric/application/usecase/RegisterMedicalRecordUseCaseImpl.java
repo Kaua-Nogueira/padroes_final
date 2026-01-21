@@ -2,7 +2,9 @@ package com.pediatric.application.usecase;
 
 import com.pediatric.application.dto.PatientHistoryDTO;
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
-import com.pediatric.application.port.input.RegisterMedicalRecordUseCase;
+import com.pediatric.application.port.input.ConsultationQueryInputPort;
+import com.pediatric.application.port.input.PatientHistoryQueryInputPort;
+import com.pediatric.application.port.input.RegisterMedicalRecordCommandInputPort;
 import com.pediatric.application.port.output.*;
 import com.pediatric.domain.entity.Consultation;
 import com.pediatric.domain.entity.MedicalRecord;
@@ -10,6 +12,9 @@ import com.pediatric.domain.entity.Patient;
 import com.pediatric.domain.entity.Prescription;
 import com.pediatric.domain.exception.BusinessRuleException;
 import com.pediatric.domain.exception.EntityNotFoundException;
+import com.pediatric.domain.valueobject.CarePlan;
+import com.pediatric.domain.valueobject.ClinicalNotes;
+import com.pediatric.domain.valueobject.VitalSigns;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +26,11 @@ import java.util.UUID;
  * Follows the Single Responsibility Principle (SRP) - focused only on medical record registration.
  * Follows the Dependency Inversion Principle (DIP) - depends on abstractions (repositories), not concretions.
  */
-public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUseCase {
+public class RegisterMedicalRecordUseCaseImpl implements
+    ConsultationQueryInputPort,
+    PatientHistoryQueryInputPort,
+    RegisterMedicalRecordCommandInputPort,
+    com.pediatric.application.port.input.RegisterMedicalRecordUseCase {
 
     private static final int PATIENT_HISTORY_LIMIT = 10;
 
@@ -48,7 +57,6 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
         this.examRepository = examRepository;
     }
 
-    @Override
     public Consultation getScheduledConsultation(UUID consultationId) {
         Consultation consultation = consultationRepository.findById(consultationId)
                 .orElseThrow(() -> new EntityNotFoundException("Consultation", consultationId));
@@ -79,7 +87,6 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
         return consultation;
     }
 
-    @Override
     public PatientHistoryDTO getPatientHistory(UUID patientId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient", patientId));
@@ -90,7 +97,6 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
         return new PatientHistoryDTO(patient, recentRecords);
     }
 
-    @Override
     public MedicalRecord registerMedicalRecord(RegisterMedicalRecordCommand command) {
         // Step 1: Validate and get the consultation
         Consultation consultation = getScheduledConsultation(command.getConsultationId());
@@ -101,11 +107,9 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
             throw new EntityNotFoundException("Patient", patientId);
         }
 
-        // Step 3: Validate all medications exist
-        validateMedications(command);
-
-        // Step 4: Validate all requested exams exist
-        validateExams(command);
+        // Step 3 & 4: Validate medications and exams
+        validateMedicationsInternal(command);
+        validateExamsInternal(command);
 
         // Step 5: Start the consultation if not already in progress
         if (consultation.getStatus() == Consultation.ConsultationStatus.SCHEDULED) {
@@ -113,31 +117,33 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
             consultationRepository.save(consultation);
         }
 
-        // Step 6: Build the medical record using Builder pattern
+        // Step 6: Map command to Value Objects and build the medical record
+        VitalSigns vitalSigns = VitalSigns.builder()
+            .weightKg(command.getWeight())
+            .heightCm(command.getHeight())
+            .temperatureC(command.getTemperature())
+            .bloodPressure(command.getBloodPressure())
+            .heartRateBpm(command.getHeartRate())
+            .build();
+
+        ClinicalNotes notes = ClinicalNotes.builder()
+            .symptomDescription(command.getSymptomDescription())
+            .clinicalObservation(command.getClinicalObservation())
+            .build();
+
+        CarePlan carePlan = CarePlan.builder()
+            .diagnosis(command.getDiagnosis())
+            .treatmentPlan(command.getTreatmentPlan())
+            .build();
+
         MedicalRecord.Builder recordBuilder = MedicalRecord.builder()
-                .consultationId(consultation.getId())
-                .patientId(patientId)
-                .doctorId(consultation.getDoctorId())
-                .weight(command.getWeight())
-                .height(command.getHeight())
-                .symptomDescription(command.getSymptomDescription())
-                .clinicalObservation(command.getClinicalObservation())
-                .diagnosis(command.getDiagnosis())
-                .treatmentPlan(command.getTreatmentPlan());
-
-        // Add optional vital signs
-        if (command.getTemperature() != null) {
-            recordBuilder.temperature(command.getTemperature());
-        }
-        if (command.getBloodPressure() != null) {
-            recordBuilder.bloodPressure(command.getBloodPressure());
-        }
-        if (command.getHeartRate() != null) {
-            recordBuilder.heartRate(command.getHeartRate());
-        }
-
-        // Add requested exam IDs
-        recordBuilder.requestedExamIds(command.getRequestedExamIds());
+            .consultationId(consultation.getId())
+            .patientId(patientId)
+            .doctorId(consultation.getDoctorId())
+            .vitalSigns(vitalSigns)
+            .clinicalNotes(notes)
+            .carePlan(carePlan)
+            .requestedExamIds(command.getRequestedExamIds());
 
         // Build the record first (to get the ID for prescriptions)
         MedicalRecord medicalRecord = recordBuilder.build();
@@ -166,8 +172,7 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
         return savedRecord;
     }
 
-    @Override
-    public void validateMedications(RegisterMedicalRecordCommand command) {
+    private void validateMedicationsInternal(RegisterMedicalRecordCommand command) {
         for (RegisterMedicalRecordCommand.PrescriptionData prescription : command.getPrescriptions()) {
             UUID medicationId = prescription.getMedicationId();
             if (!medicationRepository.existsById(medicationId)) {
@@ -176,8 +181,7 @@ public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordUs
         }
     }
 
-    @Override
-    public void validateExams(RegisterMedicalRecordCommand command) {
+    private void validateExamsInternal(RegisterMedicalRecordCommand command) {
         for (UUID examId : command.getRequestedExamIds()) {
             if (!examRepository.existsById(examId)) {
                 throw new EntityNotFoundException("Exam", examId);

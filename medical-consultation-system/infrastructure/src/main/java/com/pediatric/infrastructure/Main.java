@@ -74,7 +74,7 @@ public class Main {
                 .birthDate(LocalDate.now().minusYears(5).minusMonths(3))
                 .gender(Gender.MALE)
                 .address(address)
-                .phone(phone)
+                .addPhone(phone)
                 .build();
         patientRepository.save(patient);
         System.out.println("Created Patient: " + patient);
