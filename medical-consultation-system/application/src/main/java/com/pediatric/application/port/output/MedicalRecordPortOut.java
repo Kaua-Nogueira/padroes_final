@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Output Port (Repository) for MedicalRecord persistence operations.
  */
-public interface MedicalRecordPersistencePort {
+public interface MedicalRecordPortOut {
 
     /**
      * Saves a medical record entity.

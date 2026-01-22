@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Output Port (Repository) for Consultation persistence operations.
  */
-public interface ConsultationPersistencePort {
+public interface ConsultationPortOut {
 
     /**
      * Saves a consultation entity.

@@ -6,7 +6,7 @@ package com.pediatric.application.port.input;
  */
 @Deprecated
 public interface RegisterMedicalRecordUseCase extends
-        ConsultationQueryInputPort,
-        PatientHistoryQueryInputPort,
-        RegisterMedicalRecordCommandInputPort {
+        ConsultationQueryPortIn,
+        PatientHistoryQueryPortIn,
+        RegisterMedicalRecordCommandPortIn {
 }

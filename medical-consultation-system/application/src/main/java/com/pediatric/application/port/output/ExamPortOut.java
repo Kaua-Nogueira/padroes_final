@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Output Port (Repository) for Exam persistence operations.
  */
-public interface ExamPersistencePort {
+public interface ExamPortOut {
 
     /**
      * Saves an exam entity.

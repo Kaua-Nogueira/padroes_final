@@ -7,6 +7,6 @@ import java.util.UUID;
 /**
  * Input Port (Query) for retrieving patient history.
  */
-public interface PatientHistoryQueryInputPort {
+public interface PatientHistoryQueryPortIn {
     PatientHistoryDTO getPatientHistory(UUID patientId);
 }

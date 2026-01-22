@@ -6,6 +6,6 @@ import com.pediatric.domain.model.MedicalRecord;
 /**
  * Input Port (Command) for registering a medical record.
  */
-public interface RegisterMedicalRecordCommandInputPort {
+public interface RegisterMedicalRecordCommandPortIn {
     MedicalRecord registerMedicalRecord(RegisterMedicalRecordCommand command);
 }

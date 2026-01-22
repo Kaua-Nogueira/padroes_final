@@ -1,6 +1,6 @@
 package com.pediatric.infrastructure.adapter.persistence;
 
-import com.pediatric.application.port.output.MedicationPersistencePort;
+import com.pediatric.application.port.output.MedicationPortOut;
 import com.pediatric.domain.model.Medication;
 
 import java.util.*;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * In-Memory implementation of MedicationRepository.
  * This is an Outbound Adapter that satisfies the MedicationRepository port.
  */
-public class InMemoryMedicationRepository implements MedicationPersistencePort {
+public class InMemoryMedicationRepository implements MedicationPortOut {
 
     private final Map<UUID, Medication> storage = new ConcurrentHashMap<>();
 

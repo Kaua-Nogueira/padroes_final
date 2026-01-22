@@ -1,6 +1,6 @@
 package com.pediatric.infrastructure.adapter.persistence;
 
-import com.pediatric.application.port.output.ExamPersistencePort;
+import com.pediatric.application.port.output.ExamPortOut;
 import com.pediatric.domain.model.Exam;
 
 import java.util.*;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
  * In-Memory implementation of ExamRepository.
  * This is an Outbound Adapter that satisfies the ExamRepository port.
  */
-public class InMemoryExamRepository implements ExamPersistencePort {
+public class InMemoryExamRepository implements ExamPortOut {
 
     private final Map<UUID, Exam> storage = new ConcurrentHashMap<>();
 

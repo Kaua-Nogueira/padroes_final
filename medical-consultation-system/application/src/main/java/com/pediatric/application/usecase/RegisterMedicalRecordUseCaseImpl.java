@@ -1,7 +1,7 @@
 package com.pediatric.application.usecase;
 
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
-import com.pediatric.application.port.input.RegisterMedicalRecordCommandInputPort;
+import com.pediatric.application.port.input.RegisterMedicalRecordCommandPortIn;
 import com.pediatric.application.port.output.*;
 import com.pediatric.domain.exception.BusinessRuleException;
 import com.pediatric.domain.exception.EntityNotFoundException;
@@ -18,25 +18,25 @@ import java.util.UUID;
  * Service focused on Medical Record Registration (Command).
  * Implements the RegisterMedicalRecordCommandInputPort (ISP).
  */
-public class RegisterMedicalRecordService implements RegisterMedicalRecordCommandInputPort {
+public class RegisterMedicalRecordUseCaseImpl implements RegisterMedicalRecordCommandPortIn {
 
-    private final ConsultationPersistencePort consultationPersistencePort;
-    private final PatientPersistencePort patientPersistencePort;
-    private final MedicalRecordPersistencePort medicalRecordPersistencePort;
-    private final MedicationPersistencePort medicationPersistencePort;
-    private final ExamPersistencePort examPersistencePort;
+    private final ConsultationPortOut consultationPortOut;
+    private final PatientPortOut patientPortOut;
+    private final MedicalRecordPortOut medicalRecordPortOut;
+    private final MedicationPortOut medicationPortOut;
+    private final ExamPortOut examPortOut;
 
-    public RegisterMedicalRecordService(
-            ConsultationPersistencePort consultationPersistencePort,
-            PatientPersistencePort patientPersistencePort,
-            MedicalRecordPersistencePort medicalRecordPersistencePort,
-            MedicationPersistencePort medicationPersistencePort,
-            ExamPersistencePort examPersistencePort) {
-        this.consultationPersistencePort = consultationPersistencePort;
-        this.patientPersistencePort = patientPersistencePort;
-        this.medicalRecordPersistencePort = medicalRecordPersistencePort;
-        this.medicationPersistencePort = medicationPersistencePort;
-        this.examPersistencePort = examPersistencePort;
+    public RegisterMedicalRecordUseCaseImpl(
+            ConsultationPortOut consultationPortOut,
+            PatientPortOut patientPortOut,
+            MedicalRecordPortOut medicalRecordPortOut,
+            MedicationPortOut medicationPortOut,
+            ExamPortOut examPortOut) {
+        this.consultationPortOut = consultationPortOut;
+        this.patientPortOut = patientPortOut;
+        this.medicalRecordPortOut = medicalRecordPortOut;
+        this.medicationPortOut = medicationPortOut;
+        this.examPortOut = examPortOut;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
 
         // Step 2: Validate patient exists
         UUID patientId = consultation.getPatientId();
-        if (!patientPersistencePort.existsById(patientId)) {
+        if (!patientPortOut.existsById(patientId)) {
             throw new EntityNotFoundException("Patient", patientId);
         }
 
@@ -57,7 +57,7 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
         // Step 5: Start the consultation if not already in progress
         if (consultation.getStatus() == Consultation.ConsultationStatus.SCHEDULED) {
             consultation.startConsultation();
-            consultationPersistencePort.save(consultation);
+            consultationPortOut.save(consultation);
         }
 
         // Step 6: Map command to Entity using the Private Mapper
@@ -69,17 +69,17 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
         // We will do it nicely in the mapToEntity method.
 
         // Step 8: Save the medical record
-        MedicalRecord savedRecord = medicalRecordPersistencePort.save(medicalRecord);
+        MedicalRecord savedRecord = medicalRecordPortOut.save(medicalRecord);
 
         // Step 9: Complete the consultation
         consultation.completeConsultation();
-        consultationPersistencePort.save(consultation);
+        consultationPortOut.save(consultation);
 
         return savedRecord;
     }
 
     private Consultation validateConsultation(UUID consultationId) {
-        Consultation consultation = consultationPersistencePort.findById(consultationId)
+        Consultation consultation = consultationPortOut.findById(consultationId)
                 .orElseThrow(() -> new EntityNotFoundException("Consultation", consultationId));
 
         if (consultation.isCompleted()) {
@@ -88,7 +88,7 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
         if (consultation.isCancelled()) {
             throw new BusinessRuleException("CONSULTATION_CANCELLED", "Cannot register record for cancelled consultation");
         }
-        if (medicalRecordPersistencePort.existsByConsultationId(consultationId)) {
+        if (medicalRecordPortOut.existsByConsultationId(consultationId)) {
             throw new BusinessRuleException("RECORD_ALREADY_EXISTS", "Medical record already exists for this consultation");
         }
         return consultation;
@@ -152,7 +152,7 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
     private void validateMedicationsInternal(RegisterMedicalRecordCommand command) {
         for (RegisterMedicalRecordCommand.PrescriptionData prescription : command.getPrescriptions()) {
             UUID medicationId = prescription.getMedicationId();
-            if (!medicationPersistencePort.existsById(medicationId)) {
+            if (!medicationPortOut.existsById(medicationId)) {
                 throw new EntityNotFoundException("Medication", medicationId);
             }
         }
@@ -160,7 +160,7 @@ public class RegisterMedicalRecordService implements RegisterMedicalRecordComman
 
     private void validateExamsInternal(RegisterMedicalRecordCommand command) {
         for (UUID examId : command.getRequestedExamIds()) {
-            if (!examPersistencePort.existsById(examId)) {
+            if (!examPortOut.existsById(examId)) {
                 throw new EntityNotFoundException("Exam", examId);
             }
         }

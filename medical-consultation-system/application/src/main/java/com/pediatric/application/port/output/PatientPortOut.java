@@ -12,7 +12,7 @@ import java.util.UUID;
  * Following the Dependency Inversion Principle - the domain defines the interface,
  * infrastructure provides the implementation.
  */
-public interface PatientPersistencePort {
+public interface PatientPortOut {
 
     /**
      * Saves a patient entity.

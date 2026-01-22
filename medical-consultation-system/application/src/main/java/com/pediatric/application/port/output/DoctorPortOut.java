@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Output Port (Repository) for Doctor persistence operations.
  */
-public interface DoctorPersistencePort {
+public interface DoctorPortOut {
 
     /**
      * Saves a doctor entity.

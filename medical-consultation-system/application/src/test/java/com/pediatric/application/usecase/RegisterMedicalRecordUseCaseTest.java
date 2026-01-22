@@ -341,7 +341,7 @@ class RegisterMedicalRecordUseCaseTest {
 
     // Simple mock repository implementations for testing
     
-    static class MockPatientRepository implements PatientPersistencePort {
+    static class MockPatientRepository implements PatientPortOut {
         private final Map<UUID, Patient> storage = new HashMap<>();
 
         @Override
@@ -386,7 +386,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockConsultationRepository implements ConsultationPersistencePort {
+    static class MockConsultationRepository implements ConsultationPortOut {
         private final Map<UUID, Consultation> storage = new HashMap<>();
 
         @Override
@@ -443,7 +443,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockMedicalRecordRepository implements MedicalRecordPersistencePort {
+    static class MockMedicalRecordRepository implements MedicalRecordPortOut {
         private final Map<UUID, MedicalRecord> storage = new HashMap<>();
 
         @Override
@@ -508,7 +508,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockMedicationRepository implements MedicationPersistencePort {
+    static class MockMedicationRepository implements MedicationPortOut {
         private final Map<UUID, Medication> storage = new HashMap<>();
 
         @Override
@@ -553,7 +553,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockExamRepository implements ExamPersistencePort {
+    static class MockExamRepository implements ExamPortOut {
         private final Map<UUID, Exam> storage = new HashMap<>();
 
         @Override

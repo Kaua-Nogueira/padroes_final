@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Output Port (Repository) for Medication persistence operations.
  */
-public interface MedicationPersistencePort {
+public interface MedicationPortOut {
 
     /**
      * Saves a medication entity.

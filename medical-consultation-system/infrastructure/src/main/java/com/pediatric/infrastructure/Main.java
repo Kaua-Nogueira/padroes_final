@@ -2,9 +2,9 @@ package com.pediatric.infrastructure;
 
 import com.pediatric.application.dto.PatientHistoryDTO;
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
-import com.pediatric.application.usecase.ConsultationQueryService;
-import com.pediatric.application.usecase.PatientHistoryQueryService;
-import com.pediatric.application.usecase.RegisterMedicalRecordService;
+import com.pediatric.application.usecase.GetScheduledConsultationUseCaseImpl;
+import com.pediatric.application.usecase.GetPatientHistoryUseCaseImpl;
+import com.pediatric.application.usecase.RegisterMedicalRecordUseCaseImpl;
 import com.pediatric.domain.model.*;
 import com.pediatric.domain.valueobject.*;
 import com.pediatric.infrastructure.adapter.persistence.*;
@@ -35,19 +35,19 @@ public class Main {
         // 2. Initialize Services (Use Cases) - Segregated by Responsibility (SRP/ISP)
         
         // Service for looking up consultations
-        ConsultationQueryService consultationQueryService = new ConsultationQueryService(
+        GetScheduledConsultationUseCaseImpl getScheduledConsultationUseCaseImpl = new GetScheduledConsultationUseCaseImpl(
                 consultationRepository,
                 medicalRecordRepository
         );
 
         // Service for viewing patient history
-        PatientHistoryQueryService patientHistoryService = new PatientHistoryQueryService(
+        GetPatientHistoryUseCaseImpl patientHistoryService = new GetPatientHistoryUseCaseImpl(
                 patientRepository,
                 medicalRecordRepository
         );
 
         // Service for performing the action of registering a record (Command)
-        RegisterMedicalRecordService registerRecordService = new RegisterMedicalRecordService(
+        RegisterMedicalRecordUseCaseImpl registerRecordService = new RegisterMedicalRecordUseCaseImpl(
                 consultationRepository,
                 patientRepository,
                 medicalRecordRepository,
@@ -152,7 +152,7 @@ public class Main {
 
         // Step 1: Retrieve Scheduled Consultation (Using Query Service)
         System.out.println("Step 1: Doctor opens the consultation screen...");
-        Consultation retrievedConsultation = consultationQueryService.getScheduledConsultation(consultation.getId());
+        Consultation retrievedConsultation = getScheduledConsultationUseCaseImpl.getScheduledConsultation(consultation.getId());
         System.out.println("  ✓ Consultation loaded. Status: " + retrievedConsultation.getStatus());
 
         // Step 2: Get Patient History (Using History Service)

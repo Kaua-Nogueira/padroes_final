@@ -7,6 +7,6 @@ import java.util.UUID;
 /**
  * Input Port (Query) for retrieving scheduled consultations.
  */
-public interface ConsultationQueryInputPort {
+public interface ConsultationQueryPortIn {
     Consultation getScheduledConsultation(UUID consultationId);
 }

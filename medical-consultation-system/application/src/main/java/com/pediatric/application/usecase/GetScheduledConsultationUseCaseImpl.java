@@ -1,8 +1,8 @@
 package com.pediatric.application.usecase;
 
-import com.pediatric.application.port.input.ConsultationQueryInputPort;
-import com.pediatric.application.port.output.ConsultationPersistencePort;
-import com.pediatric.application.port.output.MedicalRecordPersistencePort;
+import com.pediatric.application.port.input.ConsultationQueryPortIn;
+import com.pediatric.application.port.output.ConsultationPortOut;
+import com.pediatric.application.port.output.MedicalRecordPortOut;
 import com.pediatric.domain.exception.BusinessRuleException;
 import com.pediatric.domain.exception.EntityNotFoundException;
 import com.pediatric.domain.model.Consultation;
@@ -13,20 +13,20 @@ import java.util.UUID;
  * Service focused on Consultation queries.
  * Implements the ConsultationQueryInputPort (ISP).
  */
-public class ConsultationQueryService implements ConsultationQueryInputPort {
+public class GetScheduledConsultationUseCaseImpl implements ConsultationQueryPortIn {
 
-    private final ConsultationPersistencePort consultationPersistencePort;
-    private final MedicalRecordPersistencePort medicalRecordPersistencePort;
+    private final ConsultationPortOut consultationPortOut;
+    private final MedicalRecordPortOut medicalRecordPortOut;
 
-    public ConsultationQueryService(ConsultationPersistencePort consultationPersistencePort,
-                                    MedicalRecordPersistencePort medicalRecordPersistencePort) {
-        this.consultationPersistencePort = consultationPersistencePort;
-        this.medicalRecordPersistencePort = medicalRecordPersistencePort;
+    public GetScheduledConsultationUseCaseImpl(ConsultationPortOut consultationPortOut,
+                                               MedicalRecordPortOut medicalRecordPortOut) {
+        this.consultationPortOut = consultationPortOut;
+        this.medicalRecordPortOut = medicalRecordPortOut;
     }
 
     @Override
     public Consultation getScheduledConsultation(UUID consultationId) {
-        Consultation consultation = consultationPersistencePort.findById(consultationId)
+        Consultation consultation = consultationPortOut.findById(consultationId)
                 .orElseThrow(() -> new EntityNotFoundException("Consultation", consultationId));
 
         // Business rule: Only scheduled or in-progress consultations can have records registered
@@ -45,7 +45,7 @@ public class ConsultationQueryService implements ConsultationQueryInputPort {
         }
 
         // Business rule: A consultation can only have one medical record
-        if (medicalRecordPersistencePort.existsByConsultationId(consultationId)) {
+        if (medicalRecordPortOut.existsByConsultationId(consultationId)) {
             throw new BusinessRuleException(
                     "RECORD_ALREADY_EXISTS",
                     "A medical record already exists for this consultation"
