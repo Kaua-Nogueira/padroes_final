@@ -1,7 +1,7 @@
 package com.pediatric.infrastructure.adapter.persistence;
 
-import com.pediatric.application.port.output.PatientRepository;
-import com.pediatric.domain.entity.Patient;
+import com.pediatric.application.port.output.PatientPersistencePort;
+import com.pediatric.domain.model.Patient;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * This is an Outbound Adapter that satisfies the PatientRepository port.
  * Useful for testing and development purposes.
  */
-public class InMemoryPatientRepository implements PatientRepository {
+public class InMemoryPatientRepository implements PatientPersistencePort {
 
     private final Map<UUID, Patient> storage = new ConcurrentHashMap<>();
 

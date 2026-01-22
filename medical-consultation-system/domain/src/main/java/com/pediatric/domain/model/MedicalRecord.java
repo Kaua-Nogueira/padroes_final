@@ -1,4 +1,4 @@
-package com.pediatric.domain.entity;
+package com.pediatric.domain.model;
 
 import com.pediatric.domain.service.BMICalculator;
 import com.pediatric.domain.valueobject.CarePlan;

@@ -1,7 +1,7 @@
 package com.pediatric.infrastructure.adapter.persistence;
 
-import com.pediatric.application.port.output.ConsultationRepository;
-import com.pediatric.domain.entity.Consultation;
+import com.pediatric.application.port.output.ConsultationPersistencePort;
+import com.pediatric.domain.model.Consultation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * In-Memory implementation of ConsultationRepository.
  * This is an Outbound Adapter that satisfies the ConsultationRepository port.
  */
-public class InMemoryConsultationRepository implements ConsultationRepository {
+public class InMemoryConsultationRepository implements ConsultationPersistencePort {
 
     private final Map<UUID, Consultation> storage = new ConcurrentHashMap<>();
 

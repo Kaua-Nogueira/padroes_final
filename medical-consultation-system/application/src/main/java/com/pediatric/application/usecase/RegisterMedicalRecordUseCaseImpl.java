@@ -6,10 +6,10 @@ import com.pediatric.application.port.input.ConsultationQueryInputPort;
 import com.pediatric.application.port.input.PatientHistoryQueryInputPort;
 import com.pediatric.application.port.input.RegisterMedicalRecordCommandInputPort;
 import com.pediatric.application.port.output.*;
-import com.pediatric.domain.entity.Consultation;
-import com.pediatric.domain.entity.MedicalRecord;
-import com.pediatric.domain.entity.Patient;
-import com.pediatric.domain.entity.Prescription;
+import com.pediatric.domain.model.Consultation;
+import com.pediatric.domain.model.MedicalRecord;
+import com.pediatric.domain.model.Patient;
+import com.pediatric.domain.model.Prescription;
 import com.pediatric.domain.exception.BusinessRuleException;
 import com.pediatric.domain.exception.EntityNotFoundException;
 import com.pediatric.domain.valueobject.CarePlan;
@@ -34,31 +34,31 @@ public class RegisterMedicalRecordUseCaseImpl implements
 
     private static final int PATIENT_HISTORY_LIMIT = 10;
 
-    private final ConsultationRepository consultationRepository;
-    private final PatientRepository patientRepository;
-    private final MedicalRecordRepository medicalRecordRepository;
-    private final MedicationRepository medicationRepository;
-    private final ExamRepository examRepository;
+    private final ConsultationPersistencePort consultationPersistencePort;
+    private final PatientPersistencePort patientPersistencePort;
+    private final MedicalRecordPersistencePort medicalRecordPersistencePort;
+    private final MedicationPersistencePort medicationPersistencePort;
+    private final ExamPersistencePort examPersistencePort;
 
     /**
      * Constructor with dependency injection.
      * All dependencies are injected through the constructor (Constructor Injection pattern).
      */
     public RegisterMedicalRecordUseCaseImpl(
-            ConsultationRepository consultationRepository,
-            PatientRepository patientRepository,
-            MedicalRecordRepository medicalRecordRepository,
-            MedicationRepository medicationRepository,
-            ExamRepository examRepository) {
-        this.consultationRepository = consultationRepository;
-        this.patientRepository = patientRepository;
-        this.medicalRecordRepository = medicalRecordRepository;
-        this.medicationRepository = medicationRepository;
-        this.examRepository = examRepository;
+            ConsultationPersistencePort consultationPersistencePort,
+            PatientPersistencePort patientPersistencePort,
+            MedicalRecordPersistencePort medicalRecordPersistencePort,
+            MedicationPersistencePort medicationPersistencePort,
+            ExamPersistencePort examPersistencePort) {
+        this.consultationPersistencePort = consultationPersistencePort;
+        this.patientPersistencePort = patientPersistencePort;
+        this.medicalRecordPersistencePort = medicalRecordPersistencePort;
+        this.medicationPersistencePort = medicationPersistencePort;
+        this.examPersistencePort = examPersistencePort;
     }
 
     public Consultation getScheduledConsultation(UUID consultationId) {
-        Consultation consultation = consultationRepository.findById(consultationId)
+        Consultation consultation = consultationPersistencePort.findById(consultationId)
                 .orElseThrow(() -> new EntityNotFoundException("Consultation", consultationId));
 
         // Business rule: Only scheduled or in-progress consultations can have records registered
@@ -77,7 +77,7 @@ public class RegisterMedicalRecordUseCaseImpl implements
         }
 
         // Business rule: A consultation can only have one medical record
-        if (medicalRecordRepository.existsByConsultationId(consultationId)) {
+        if (medicalRecordPersistencePort.existsByConsultationId(consultationId)) {
             throw new BusinessRuleException(
                     "RECORD_ALREADY_EXISTS",
                     "A medical record already exists for this consultation"
@@ -88,10 +88,10 @@ public class RegisterMedicalRecordUseCaseImpl implements
     }
 
     public PatientHistoryDTO getPatientHistory(UUID patientId) {
-        Patient patient = patientRepository.findById(patientId)
+        Patient patient = patientPersistencePort.findById(patientId)
                 .orElseThrow(() -> new EntityNotFoundException("Patient", patientId));
 
-        List<MedicalRecord> recentRecords = medicalRecordRepository
+        List<MedicalRecord> recentRecords = medicalRecordPersistencePort
                 .findRecentByPatientId(patientId, PATIENT_HISTORY_LIMIT);
 
         return new PatientHistoryDTO(patient, recentRecords);
@@ -103,7 +103,7 @@ public class RegisterMedicalRecordUseCaseImpl implements
 
         // Step 2: Validate patient exists
         UUID patientId = consultation.getPatientId();
-        if (!patientRepository.existsById(patientId)) {
+        if (!patientPersistencePort.existsById(patientId)) {
             throw new EntityNotFoundException("Patient", patientId);
         }
 
@@ -114,7 +114,7 @@ public class RegisterMedicalRecordUseCaseImpl implements
         // Step 5: Start the consultation if not already in progress
         if (consultation.getStatus() == Consultation.ConsultationStatus.SCHEDULED) {
             consultation.startConsultation();
-            consultationRepository.save(consultation);
+            consultationPersistencePort.save(consultation);
         }
 
         // Step 6: Map command to Value Objects and build the medical record
@@ -163,11 +163,11 @@ public class RegisterMedicalRecordUseCaseImpl implements
         }
 
         // Step 8: Save the medical record
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        MedicalRecord savedRecord = medicalRecordPersistencePort.save(medicalRecord);
 
         // Step 9: Complete the consultation
         consultation.completeConsultation();
-        consultationRepository.save(consultation);
+        consultationPersistencePort.save(consultation);
 
         return savedRecord;
     }
@@ -175,7 +175,7 @@ public class RegisterMedicalRecordUseCaseImpl implements
     private void validateMedicationsInternal(RegisterMedicalRecordCommand command) {
         for (RegisterMedicalRecordCommand.PrescriptionData prescription : command.getPrescriptions()) {
             UUID medicationId = prescription.getMedicationId();
-            if (!medicationRepository.existsById(medicationId)) {
+            if (!medicationPersistencePort.existsById(medicationId)) {
                 throw new EntityNotFoundException("Medication", medicationId);
             }
         }
@@ -183,7 +183,7 @@ public class RegisterMedicalRecordUseCaseImpl implements
 
     private void validateExamsInternal(RegisterMedicalRecordCommand command) {
         for (UUID examId : command.getRequestedExamIds()) {
-            if (!examRepository.existsById(examId)) {
+            if (!examPersistencePort.existsById(examId)) {
                 throw new EntityNotFoundException("Exam", examId);
             }
         }

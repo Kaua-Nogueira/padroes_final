@@ -1,6 +1,6 @@
 package com.pediatric.application.port.input;
 
-import com.pediatric.domain.entity.Consultation;
+import com.pediatric.domain.model.Consultation;
 
 import java.util.UUID;
 

@@ -4,7 +4,7 @@ import com.pediatric.application.dto.PatientHistoryDTO;
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
 import com.pediatric.application.port.input.RegisterMedicalRecordUseCase;
 import com.pediatric.application.port.output.*;
-import com.pediatric.domain.entity.*;
+import com.pediatric.domain.model.*;
 import com.pediatric.domain.exception.BusinessRuleException;
 import com.pediatric.domain.exception.EntityNotFoundException;
 import com.pediatric.domain.valueobject.Address;
@@ -341,7 +341,7 @@ class RegisterMedicalRecordUseCaseTest {
 
     // Simple mock repository implementations for testing
     
-    static class MockPatientRepository implements PatientRepository {
+    static class MockPatientRepository implements PatientPersistencePort {
         private final Map<UUID, Patient> storage = new HashMap<>();
 
         @Override
@@ -386,7 +386,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockConsultationRepository implements ConsultationRepository {
+    static class MockConsultationRepository implements ConsultationPersistencePort {
         private final Map<UUID, Consultation> storage = new HashMap<>();
 
         @Override
@@ -443,7 +443,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockMedicalRecordRepository implements MedicalRecordRepository {
+    static class MockMedicalRecordRepository implements MedicalRecordPersistencePort {
         private final Map<UUID, MedicalRecord> storage = new HashMap<>();
 
         @Override
@@ -508,7 +508,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockMedicationRepository implements MedicationRepository {
+    static class MockMedicationRepository implements MedicationPersistencePort {
         private final Map<UUID, Medication> storage = new HashMap<>();
 
         @Override
@@ -553,7 +553,7 @@ class RegisterMedicalRecordUseCaseTest {
         }
     }
 
-    static class MockExamRepository implements ExamRepository {
+    static class MockExamRepository implements ExamPersistencePort {
         private final Map<UUID, Exam> storage = new HashMap<>();
 
         @Override

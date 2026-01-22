@@ -1,10 +1,9 @@
 package com.pediatric.application.dto;
 
-import com.pediatric.domain.entity.MedicalRecord;
-import com.pediatric.domain.entity.Patient;
+import com.pediatric.domain.model.MedicalRecord;
+import com.pediatric.domain.model.Patient;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

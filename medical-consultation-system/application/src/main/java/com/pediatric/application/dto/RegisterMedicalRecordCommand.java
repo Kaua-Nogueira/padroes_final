@@ -1,6 +1,6 @@
 package com.pediatric.application.dto;
 
-import com.pediatric.domain.entity.Prescription;
+import com.pediatric.domain.model.Prescription;
 
 import java.util.ArrayList;
 import java.util.List;

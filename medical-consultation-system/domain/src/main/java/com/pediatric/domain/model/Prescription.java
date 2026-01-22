@@ -1,4 +1,4 @@
-package com.pediatric.domain.entity;
+package com.pediatric.domain.model;
 
 import java.util.Objects;
 import java.util.UUID;

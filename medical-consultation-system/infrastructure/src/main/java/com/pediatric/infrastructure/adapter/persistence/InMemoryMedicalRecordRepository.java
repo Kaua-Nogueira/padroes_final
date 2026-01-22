@@ -1,7 +1,7 @@
 package com.pediatric.infrastructure.adapter.persistence;
 
-import com.pediatric.application.port.output.MedicalRecordRepository;
-import com.pediatric.domain.entity.MedicalRecord;
+import com.pediatric.application.port.output.MedicalRecordPersistencePort;
+import com.pediatric.domain.model.MedicalRecord;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * In-Memory implementation of MedicalRecordRepository.
  * This is an Outbound Adapter that satisfies the MedicalRecordRepository port.
  */
-public class InMemoryMedicalRecordRepository implements MedicalRecordRepository {
+public class InMemoryMedicalRecordRepository implements MedicalRecordPersistencePort {
 
     private final Map<UUID, MedicalRecord> storage = new ConcurrentHashMap<>();
 

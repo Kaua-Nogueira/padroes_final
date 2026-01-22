@@ -1,4 +1,4 @@
-package com.pediatric.domain.entity;
+package com.pediatric.domain.model;
 
 import com.pediatric.domain.valueobject.Address;
 import com.pediatric.domain.valueobject.Gender;

@@ -1,4 +1,4 @@
-package com.pediatric.domain.entity;
+package com.pediatric.domain.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

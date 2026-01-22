@@ -4,7 +4,7 @@ import com.pediatric.application.dto.PatientHistoryDTO;
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
 import com.pediatric.application.port.input.RegisterMedicalRecordUseCase;
 import com.pediatric.application.usecase.RegisterMedicalRecordUseCaseImpl;
-import com.pediatric.domain.entity.*;
+import com.pediatric.domain.model.*;
 import com.pediatric.domain.valueobject.Address;
 import com.pediatric.domain.valueobject.Gender;
 import com.pediatric.domain.valueobject.Phone;
