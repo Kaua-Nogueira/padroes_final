@@ -1,5 +1,6 @@
 package com.pediatric.domain.valueobject;
 
+import com.pediatric.domain.service.BMICalculator;
 import java.util.Optional;
 
 /**
@@ -34,6 +35,14 @@ public final class VitalSigns {
     public Optional<Double> getTemperatureC() { return Optional.ofNullable(temperatureC); }
     public Optional<String> getBloodPressure() { return Optional.ofNullable(bloodPressure); }
     public Optional<Integer> getHeartRateBpm() { return Optional.ofNullable(heartRateBpm); }
+
+    public double calculateBMI() {
+        return BMICalculator.calculate(weightKg, heightCm);
+    }
+
+    public String getBMIClassification() {
+        return BMICalculator.classify(calculateBMI());
+    }
 
     public Builder toBuilder() {
         return new Builder()
