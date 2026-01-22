@@ -92,10 +92,10 @@ public final class PatientHistoryDTO {
         public static RecordSummary fromMedicalRecord(MedicalRecord record) {
             return new RecordSummary(
                     record.getCreatedAt(),
-                    record.getWeight(),
-                    record.getHeight(),
-                    record.calculateBMI(),
-                    truncate(record.getSymptomDescription(), 100),
+                    record.getVitalSigns().getWeightKg(),
+                    record.getVitalSigns().getHeightCm(),
+                    record.getVitalSigns().calculateBMI(),
+                    truncate(record.getClinicalNotes().getSymptomDescription(), 100),
                     record.getPrescriptionCount(),
                     record.getRequestedExamCount()
             );

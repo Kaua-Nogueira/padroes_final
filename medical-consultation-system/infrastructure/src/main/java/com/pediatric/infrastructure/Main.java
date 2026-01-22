@@ -2,12 +2,11 @@ package com.pediatric.infrastructure;
 
 import com.pediatric.application.dto.PatientHistoryDTO;
 import com.pediatric.application.dto.RegisterMedicalRecordCommand;
-import com.pediatric.application.port.input.RegisterMedicalRecordUseCase;
-import com.pediatric.application.usecase.RegisterMedicalRecordUseCaseImpl;
+import com.pediatric.application.usecase.ConsultationQueryService;
+import com.pediatric.application.usecase.PatientHistoryQueryService;
+import com.pediatric.application.usecase.RegisterMedicalRecordService;
 import com.pediatric.domain.model.*;
-import com.pediatric.domain.valueobject.Address;
-import com.pediatric.domain.valueobject.Gender;
-import com.pediatric.domain.valueobject.Phone;
+import com.pediatric.domain.valueobject.*;
 import com.pediatric.infrastructure.adapter.persistence.*;
 
 import java.time.LocalDate;
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 
 /**
  * Demonstration of the Medical Consultation System.
- * This serves as an Inbound Adapter (entry point) for testing the use case.
+ * This serves as an Inbound Adapter (entry point) for testing the services.
  */
 public class Main {
 
@@ -25,7 +24,7 @@ public class Main {
         System.out.println("  Hexagonal Architecture Demo");
         System.out.println("==============================================\n");
 
-        // Initialize repositories (Outbound Adapters)
+        // 1. Initialize repositories (Outbound Adapters)
         var patientRepository = new InMemoryPatientRepository();
         var consultationRepository = new InMemoryConsultationRepository();
         var medicalRecordRepository = new InMemoryMedicalRecordRepository();
@@ -33,8 +32,22 @@ public class Main {
         var medicationRepository = new InMemoryMedicationRepository();
         var examRepository = new InMemoryExamRepository();
 
-        // Create the Use Case with dependencies injected
-        RegisterMedicalRecordUseCase useCase = new RegisterMedicalRecordUseCaseImpl(
+        // 2. Initialize Services (Use Cases) - Segregated by Responsibility (SRP/ISP)
+        
+        // Service for looking up consultations
+        ConsultationQueryService consultationQueryService = new ConsultationQueryService(
+                consultationRepository,
+                medicalRecordRepository
+        );
+
+        // Service for viewing patient history
+        PatientHistoryQueryService patientHistoryService = new PatientHistoryQueryService(
+                patientRepository,
+                medicalRecordRepository
+        );
+
+        // Service for performing the action of registering a record (Command)
+        RegisterMedicalRecordService registerRecordService = new RegisterMedicalRecordService(
                 consultationRepository,
                 patientRepository,
                 medicalRecordRepository,
@@ -53,7 +66,7 @@ public class Main {
                 .active(true)
                 .build();
         doctorRepository.save(doctor);
-        System.out.println("Created Doctor: " + doctor);
+        System.out.println("Created Doctor: " + doctor.getName());
 
         // Create a Patient (Child)
         Address address = Address.builder()
@@ -77,7 +90,7 @@ public class Main {
                 .addPhone(phone)
                 .build();
         patientRepository.save(patient);
-        System.out.println("Created Patient: " + patient);
+        System.out.println("Created Patient: " + patient.getChildName());
 
         // Create Medications
         Medication amoxicillin = Medication.builder()
@@ -131,33 +144,33 @@ public class Main {
                 .isScheduled(true)
                 .build();
         consultationRepository.save(consultation);
-        System.out.println("Created Consultation: " + consultation);
+        System.out.println("Created Consultation ID: " + consultation.getId());
 
-        System.out.println("\n--- Starting Use Case Flow ---\n");
+        System.out.println("\n--- Starting Use Case Flow (Simulating Frontend) ---\n");
 
         // === Use Case Flow ===
 
-        // Step 1: Retrieve Scheduled Consultation
-        System.out.println("Step 1: Retrieving scheduled consultation...");
-        Consultation retrievedConsultation = useCase.getScheduledConsultation(consultation.getId());
-        System.out.println("  Retrieved: " + retrievedConsultation.getStatus());
+        // Step 1: Retrieve Scheduled Consultation (Using Query Service)
+        System.out.println("Step 1: Doctor opens the consultation screen...");
+        Consultation retrievedConsultation = consultationQueryService.getScheduledConsultation(consultation.getId());
+        System.out.println("  ✓ Consultation loaded. Status: " + retrievedConsultation.getStatus());
 
-        // Step 2: Get Patient History
-        System.out.println("\nStep 2: Getting patient history...");
-        PatientHistoryDTO history = useCase.getPatientHistory(patient.getId());
-        System.out.println("  Patient: " + history.getPatient().getChildName());
-        System.out.println("  Age: " + history.getPatient().getAgeDescription());
-        System.out.println("  Previous Consultations: " + history.getTotalConsultations());
-        System.out.println("  Has History: " + history.hasHistory());
+        // Step 2: Get Patient History (Using History Service)
+        System.out.println("\nStep 2: Doctor checks patient history...");
+        PatientHistoryDTO history = patientHistoryService.getPatientHistory(patient.getId());
+        System.out.println("  ✓ Patient History loaded for: " + history.getPatient().getChildName());
+        System.out.println("  ✓ Previous Consultations: " + history.getTotalConsultations());
+        System.out.println("  ✓ Has History: " + history.hasHistory());
 
-        // Step 3: Register Medical Record
-        System.out.println("\nStep 3: Registering medical record...");
+        // Step 3: Register Medical Record (Using Command Service)
+        System.out.println("\nStep 3: Doctor fills form and clicks 'Save'...");
         RegisterMedicalRecordCommand command = RegisterMedicalRecordCommand.builder()
                 .consultationId(consultation.getId())
                 .weight(18.5)
                 .height(110.0)
-                .temperature(37.8)
-                .heartRate(95)
+                .temperature(Double.valueOf(37.8))
+                .bloodPressure("100/60")
+                .heartRate(Integer.valueOf(95))
                 .symptomDescription("Patient presents with fever (37.8°C), cough, and mild throat pain for 2 days.")
                 .clinicalObservation("Throat shows mild inflammation. Lungs clear on auscultation. No signs of respiratory distress.")
                 .diagnosis("Upper Respiratory Tract Infection (URI)")
@@ -181,21 +194,22 @@ public class Main {
                 .addRequestedExamId(bloodTest.getId())
                 .build();
 
-        MedicalRecord medicalRecord = useCase.registerMedicalRecord(command);
+        MedicalRecord medicalRecord = registerRecordService.registerMedicalRecord(command);
 
         System.out.println("\n=== Medical Record Created Successfully ===");
         System.out.println("  Record ID: " + medicalRecord.getId());
-        System.out.println("  Weight: " + medicalRecord.getWeight() + " kg");
-        System.out.println("  Height: " + medicalRecord.getHeight() + " cm");
-        System.out.println("  BMI: " + String.format("%.2f", medicalRecord.calculateBMI()) + " (" + medicalRecord.getBMIClassification() + ")");
-        System.out.println("  Symptoms: " + medicalRecord.getSymptomDescription());
-        System.out.println("  Diagnosis: " + medicalRecord.getDiagnosis().orElse("N/A"));
+        // Using Value Objects accessors properly
+        System.out.println("  Weight: " + medicalRecord.getVitalSigns().getWeightKg() + " kg");
+        System.out.println("  Height: " + medicalRecord.getVitalSigns().getHeightCm() + " cm");
+        System.out.println("  BMI: " + String.format("%.2f", Double.valueOf(medicalRecord.getVitalSigns().calculateBMI())) + " (" + medicalRecord.getVitalSigns().getBMIClassification() + ")");
+        System.out.println("  Symptoms: " + medicalRecord.getClinicalNotes().getSymptomDescription());
+        System.out.println("  Diagnosis: " + (medicalRecord.getCarePlan().getDiagnosis() != null ? medicalRecord.getCarePlan().getDiagnosis() : "N/A"));
         System.out.println("  Prescriptions: " + medicalRecord.getPrescriptionCount());
         System.out.println("  Exams Requested: " + medicalRecord.getRequestedExamCount());
 
         // Verify consultation was completed
         Consultation completedConsultation = consultationRepository.findById(consultation.getId()).orElseThrow();
-        System.out.println("\n  Consultation Status: " + completedConsultation.getStatus());
+        System.out.println("\n  Consultation Final Status: " + completedConsultation.getStatus());
 
         System.out.println("\n==============================================");
         System.out.println("  Demo completed successfully!");

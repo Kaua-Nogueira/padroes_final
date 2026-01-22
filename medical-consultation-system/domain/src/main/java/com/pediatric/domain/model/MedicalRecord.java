@@ -132,7 +132,7 @@ public class MedicalRecord {
     @Override
     public String toString() {
         return String.format("MedicalRecord{id=%s, consultationId=%s, weight=%.1fkg, height=%.1fcm, prescriptions=%d, exams=%d}",
-            id, consultationId, vitalSigns.getWeightKg(), vitalSigns.getHeightCm(), prescriptions.size(), examRequests.size());
+            id, consultationId, Double.valueOf(vitalSigns.getWeightKg()), Double.valueOf(vitalSigns.getHeightCm()), Integer.valueOf(prescriptions.size()), Integer.valueOf(examRequests.size()));
     }
 
     // --- Clean Builder ---
